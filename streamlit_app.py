@@ -1,3 +1,13 @@
+!pip install streamlit
+!pip install langchain
+!pip install unstructured
+!pip install openai
+!pip install streamlit_chat
+!pip install python-dotenv
+!pip install unstructured[local-inference]
+!pip install chromadb
+!pip install tiktoken
+
 import openai
 import streamlit as st
 from streamlit_chat import message
@@ -11,15 +21,15 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import UnstructuredPDFLoader
 
-load_dotenv()
-openai.api_key = os.environ.get('OPENAI_API_KEY', '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')
+
+os.environ['OPENAI_API_KEY'] = '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'
 
 persist_directory = 'ai_paper1'
 embeddings = OpenAIEmbeddings()
 
 if not os.path.exists(persist_directory):
     print('embedding the document now')
-    loader = UnstructuredPDFLoader('ai_paper.pdf', mode="elements")
+    loader = UnstructuredPDFLoader('p17.pdf', mode="elements")
     pages = loader.load_and_split()
 
     vectordb = Chroma.from_documents(documents=pages, embedding=embeddings, persist_directory=persist_directory)
