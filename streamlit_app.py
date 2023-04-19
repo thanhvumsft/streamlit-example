@@ -1,12 +1,4 @@
-!pip install streamlit
-!pip install langchain
-!pip install unstructured
-!pip install openai
-!pip install streamlit_chat
-!pip install python-dotenv
-!pip install unstructured[local-inference]
-!pip install chromadb
-!pip install tiktoken
+
 
 import openai
 import streamlit as st
