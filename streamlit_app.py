@@ -1,14 +1,4 @@
-#import streamlit as st
-#from streamlit_chat import message
-#from dotenv import load_dotenv
-import os 
-import OpenAIEmbeddings from langchain.embeddings.openai 
-from langchain.vectorstores import Chroma
-import openai
-from langchain.document_loaders import UnstructuredMarkdownLoader
-from langchain.chains.question_answering import load_qa_chain
-from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import UnstructuredPDFLoader
+
 
 
 os.environ['OPENAI_API_KEY'] = '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'
