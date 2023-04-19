@@ -2,7 +2,7 @@
 #from streamlit_chat import message
 #from dotenv import load_dotenv
 import os 
-from langchain.embeddings.openai import OpenAIEmbeddings
+import OpenAIEmbeddings from langchain.embeddings.openai 
 from langchain.vectorstores import Chroma
 import openai
 from langchain.document_loaders import UnstructuredMarkdownLoader
