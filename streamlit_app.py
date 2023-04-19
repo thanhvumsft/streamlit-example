@@ -1,6 +1,6 @@
 #import streamlit as st
 #from streamlit_chat import message
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os 
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
