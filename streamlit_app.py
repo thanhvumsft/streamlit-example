@@ -1,38 +1,69 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
+import openai
 import streamlit as st
+from streamlit_chat import message
+from dotenv import load_dotenv
+import os 
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
+import openai
+from langchain.document_loaders import UnstructuredMarkdownLoader
+from langchain.chains.question_answering import load_qa_chain
+from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders import UnstructuredPDFLoader
 
-"""
-# Welcome to Streamlit!
+load_dotenv()
+openai.api_key = os.environ.get('OPENAI_API_KEY', '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')
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+persist_directory = 'ai_paper1'
+embeddings = OpenAIEmbeddings()
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+if not os.path.exists(persist_directory):
+    print('embedding the document now')
+    loader = UnstructuredPDFLoader('ai_paper.pdf', mode="elements")
+    pages = loader.load_and_split()
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+    vectordb = Chroma.from_documents(documents=pages, embedding=embeddings, persist_directory=persist_directory)
+    vectordb.persist()
 
+vectordb = Chroma(persist_directory=persist_directory, embedding_function=embeddings)
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+def generate_response(prompt):
+    completion = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "user", "content": prompt}
+    ])
+    response = completion.choices[0].message.content
+    return response
 
-    Point = namedtuple('Point', 'x y')
-    data = []
+st.title("🤖 pwang_szn bot")
 
-    points_per_turn = total_points / num_turns
+if 'generated' not in st.session_state:
+    st.session_state['generated'] = ['i am ready to help you ser']
 
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
+if 'past' not in st.session_state:
+    st.session_state['past'] = ['hey there!']
 
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+def get_text():
+    input_text = st.text_input("", key="input")
+    return input_text 
+
+def search_chroma(query):
+    result_docs = vectordb.similarity_search(query)
+
+    chain = load_qa_chain(ChatOpenAI(temperature=0), chain_type="stuff")
+    output = chain({"input_documents": result_docs, "question": query})
+
+    return output['output_text']
+
+user_input = get_text()
+if user_input:
+    output = search_chroma(user_input)
+    st.session_state.past.append(user_input)
+    st.session_state.generated.append(output)
+
+if st.session_state['generated']:
+
+    for i in range(len(st.session_state['generated'])-1, -1, -1):
+        message(st.session_state["generated"][i], key=str(i))
+        message(st.session_state['past'][i], is_user=True, key=str(i) + '_user')
